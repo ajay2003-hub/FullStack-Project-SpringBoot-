@@ -35,10 +35,10 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // authorization rules using lambda to avoid ambiguous overloads
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        // allow public GET access to movie list and single movie so frontend can test DB connectivity
-                        .requestMatchers(HttpMethod.GET, "/api/v1/movies/**").permitAll()
-                        .anyRequest().authenticated()
+//                        .requestMatchers("/api/v1/auth/**").permitAll()
+//                        // allow public GET access to movie list and single movie so frontend can test DB connectivity
+//                        .requestMatchers(HttpMethod.GET, "/api/v1/movies/**").permitAll()
+                        .anyRequest().permitAll()
                 );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
