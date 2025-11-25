@@ -15,11 +15,12 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "http://localhost:3000",                    // local React
-                                "https://<your-netlify-site>.netlify.app"   // replace after deploy
+                                "http://localhost:3000",                 // local dev
+                                "https://movie4u-api.netlify.app"       // your live frontend
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
+                // .allowCredentials(true); // only if you use cookies/auth
             }
         };
     }
