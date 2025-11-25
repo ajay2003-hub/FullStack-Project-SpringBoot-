@@ -5,7 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -17,6 +17,7 @@ import dev.ajykumar.movieist.service.UserService;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -25,11 +26,27 @@ public class JwtFilter extends OncePerRequestFilter {
     private UserService userService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
             throws ServletException, IOException {
+
+        String path = request.getServletPath();
+
+        // 🔓 Public endpoints: skip JWT verification
+        if (path.startsWith("/api/v1/auth")
+                || (request.getMethod().equals("GET") && path.startsWith("/api/v1/movies"))
+                || (request.getMethod().equals("POST") && path.startsWith("/api/v1/reviews"))) {
+
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // From here, JWT is required
         final String authHeader = request.getHeader("Authorization");
         String username = null;
         String token = null;
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             try {
@@ -41,11 +58,13 @@ public class JwtFilter extends OncePerRequestFilter {
             var userDetails = userService.loadUserByUsername(username);
             if (jwtUtil.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+
         chain.doFilter(request, response);
     }
 }
