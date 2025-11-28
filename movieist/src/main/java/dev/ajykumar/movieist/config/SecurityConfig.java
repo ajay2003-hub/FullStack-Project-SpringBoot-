@@ -38,14 +38,13 @@ public class SecurityConfig {
                         // Auth endpoints (login/register) open
                         .requestMatchers("/api/v1/auth/**").permitAll()
 
-                        // Public movie data
-                        .requestMatchers(HttpMethod.GET, "/api/v1/movies/**").permitAll()
+                        // Public movie data (all methods on movies)
+                        .requestMatchers("/api/v1/movies/**").permitAll()
 
-                        // Allow reviews without auth (for now)
-                        .requestMatchers(HttpMethod.POST, "/api/v1/reviews/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/movies/**/reviews/**").permitAll()
+                        // Allow all review endpoints (GET/POST/etc.)
+                        .requestMatchers("/api/v1/reviews", "/api/v1/reviews/**").permitAll()
 
-                        // Everything else requires auth (later you can plug JWT here)
+                        // Everything else requires auth
                         .anyRequest().authenticated()
                 );
 

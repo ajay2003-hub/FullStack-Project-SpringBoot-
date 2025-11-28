@@ -33,6 +33,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
+        // Allow preflight CORS requests
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         // 🔓 Public endpoints: skip JWT verification
         if (path.startsWith("/api/v1/auth")
                 || (request.getMethod().equals("GET") && path.startsWith("/api/v1/movies"))
@@ -62,9 +68,12 @@ public class JwtFilter extends OncePerRequestFilter {
                                 userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                chain.doFilter(request, response);
+                return;
             }
         }
 
-        chain.doFilter(request, response);
+        // If we reach here, token was missing/invalid -> return 401
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid JWT");
     }
 }

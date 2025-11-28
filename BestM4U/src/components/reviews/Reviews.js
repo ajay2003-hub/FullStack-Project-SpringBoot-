@@ -14,21 +14,24 @@ const Reviews = ({getMovieData,movie,reviews = [],setReviews = () => {}}) => {
 
     useEffect(()=>{
         getMovieData(movieId);
-    },[])
+    },[movieId])
 
     const addReview = async (e) =>{
         e.preventDefault();
 
         const rev = revText.current;
-        if(!rev){
+        if(!rev || !rev.value){
             return;
         }
 
         const endpoint = "/api/v1/reviews";
         const payload = { reviewBody: rev.value, imdbId: movieId };
 
+        const token = localStorage.getItem('authToken');
         try {
-            const response = await api.post(endpoint, payload);
+            const response = await api.post(endpoint, payload, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
             const base = Array.isArray(reviews) ? reviews : [];
             const updatedReviews = [...base, { body: rev.value }];
@@ -37,12 +40,10 @@ const Reviews = ({getMovieData,movie,reviews = [],setReviews = () => {}}) => {
 
             setReviews(updatedReviews);
         } catch (err) {
-            // error intentionally not logged to console in production UI
+            // Log error for debugging review submission failures
+            // eslint-disable-next-line no-console
+            console.error('Review submit error:', err?.response?.data || err?.message || err);
         }
-        
-
-
-
     }
 
   return (
@@ -56,7 +57,7 @@ const Reviews = ({getMovieData,movie,reviews = [],setReviews = () => {}}) => {
             </Col>
             <Col>
                 {
-                    <>
+                    <React.Fragment>
                         <Row>
                             <Col>
                                 <ReviewForm handleSubmit={addReview} revText={revText} labelText = "Write a Review?" />  
@@ -67,12 +68,13 @@ const Reviews = ({getMovieData,movie,reviews = [],setReviews = () => {}}) => {
                                 <hr />
                             </Col>
                         </Row>
-                    </>
+                    </React.Fragment>
                 }
                 {
-                    reviews?.map((r) => {
+                    reviews?.map((r, idx) => {
+                        const key = r.id ?? `${r.body}-${idx}`;
                         return(
-                            <>
+                            <React.Fragment key={key}>
                                 <Row>
                                     <Col>{r.body}</Col>
                                 </Row>
@@ -81,7 +83,7 @@ const Reviews = ({getMovieData,movie,reviews = [],setReviews = () => {}}) => {
                                         <hr />
                                     </Col>
                                 </Row>                                
-                            </>
+                            </React.Fragment>
                         )
                     })
                 }
