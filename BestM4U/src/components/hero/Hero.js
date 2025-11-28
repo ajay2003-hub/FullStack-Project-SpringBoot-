@@ -1,60 +1,94 @@
 import './Hero.css';
-import Carousel from 'react-material-ui-carousel';
-import { Paper } from '@mui/material';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCirclePlay } from '@fortawesome/free-solid-svg-icons';
-import {Link, useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 
+const Hero = ({ movies = [] }) => {
+  const navigate = useNavigate();
+  const [selected, setSelected] = useState(null);
 
-const Hero = ({movies}) => {
+  useEffect(() => {
+    console.log('Hero movies prop:', movies);
+    if (movies && movies.length) setSelected(movies[0]);
+  }, [movies]);
 
-    const navigate = useNavigate();
+  useEffect(() => {
+    console.log('Hero selected:', selected);
+  }, [selected]);
 
-    function reviews(movieId)
-    {
-        navigate(`/Reviews/${movieId}`);
-    }
+  // helper to pick poster fields used by your API
+  const getPoster = (m) => m?.poster || m?.poster_path || m?.posterUrl || m?.image || m?.thumbnail || '';
+
+  const posterSrc = getPoster(selected) || '/placeholder.png';
+  const backdropSrc = (selected?.backdrops && selected.backdrops[0]) || selected?.backdrop || '';
+
+  function reviews(movieId) {
+    navigate(`/Reviews/${movieId}`);
+  }
+
+  function goToTrailer(link) {
+    if (!link) return;
+    const id = link.substring(link.length - 11);
+    navigate(`/Trailer/${id}`);
+  }
 
   return (
-    <div className ='movie-carousel-container'>
-      <Carousel>
-        {
-            movies?.map((movie) =>{
-                return(
-                    <Paper key={movie.imdbId}>
-                        <div className = 'movie-card-container'>
-                            <div className="movie-card" style={{"--img": `url(${movie.backdrops[0]})`}}>
-                                <div className="movie-detail">
-                                    <div className="movie-poster">
-                                        <img src={movie.poster} alt="" />
-                                    </div>
-                                    <div className="movie-title">
-                                        <h4>{movie.title}</h4>
-                                    </div>
-                                    <div className="movie-buttons-container">
-                                        <Link to={`/Trailer/${movie.trailerLink.substring(movie.trailerLink.length - 11)}`}>
-                                            <div className="play-button-icon-container">
-                                                <FontAwesomeIcon className="play-button-icon"
-                                                    icon = {faCirclePlay}
-                                                />
-                                            </div>
-                                        </Link>
+    <div className="hero-root">
+      <div
+        className="hero-main"
+        style={{ backgroundImage: backdropSrc ? `url(${backdropSrc})` : undefined }}
+      >
+        <div className="hero-overlay">
+          <div className="hero-left">
+            <div className="hero-poster">
+              {selected ? (
+                <img src={posterSrc} alt={selected.title || 'poster'} onError={(e)=>{e.currentTarget.src='/placeholder.png'}}/>
+              ) : (
+                <img src="/placeholder.png" alt="placeholder" />
+              )}
+            </div>
+          </div>
 
-                                        <div className="movie-review-button-container">
-                                            <Button variant ="info" onClick={() => reviews(movie.imdbId)} >Reviews</Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Paper>
-                )
-            })
-        }
-      </Carousel>
+          <div className="hero-right">
+            <h1 className="hero-title">{selected?.title}</h1>
+            <div className="hero-actions">
+              <Button variant="light" className="hero-play" onClick={() => goToTrailer(selected?.trailerLink)}>
+                <FontAwesomeIcon icon={faCirclePlay} /> Watch Trailer
+              </Button>
+              <Button variant="info" className="hero-reviews" onClick={() => reviews(selected?.imdbId)}>
+                Reviews
+              </Button>
+            </div>
+            <p className="hero-overview">{selected?.overview}</p>
+          </div>
+        </div>
+
+        {/* centered thumbnails strip - moved inside hero-main so it overlays the background */}
+        <div className="hero-thumbs-wrap" aria-hidden={false}>
+          <div className="hero-thumbs">
+            {movies?.map((m) => {
+              const active = selected && selected.imdbId === m.imdbId;
+              const thumbSrc = getPoster(m) || '/placeholder.png';
+              return (
+                <button
+                  key={m.imdbId ?? m.id ?? m.title}
+                  className={`thumb-btn ${active ? 'active' : ''}`}
+                  onClick={() => setSelected(m)}
+                  aria-label={`Show ${m.title}`}
+                  type="button"
+                >
+                  <img src={thumbSrc} alt={m.title} onError={(e)=>{e.currentTarget.src='/placeholder.png'}} />
+                  
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;

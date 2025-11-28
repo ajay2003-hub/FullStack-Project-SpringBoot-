@@ -1,3 +1,230 @@
+:root{
+  --thumb-size: 52px;   /* base thumbnail width */
+  --thumb-gap: 12px;    /* gap between thumbnails */
+  --visible-count: 4;   /* how many visible at once */
+}
+
+/* Root */
+.hero-root {
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+/* Large hero area: fill the viewport */
+.hero-main {
+  width: 100%;
+  min-height: 90vh; /* fill screen */
+  height: 90vh;
+  background-size: cover;
+  background-position: center;
+  border-radius: 0; /* fullscreen look */
+  position: relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow: visible;
+  color: #fff;
+}
+
+/* Dim overlay for readability */
+.hero-main::before {
+  content: '';
+  position:absolute;
+  inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.65) 75%);
+  z-index:1;
+}
+
+/* Content inside hero */
+.hero-overlay {
+  position: relative;
+  z-index:2;
+  width: 100%;
+  max-width: 1200px;
+  padding: 24px;
+  display:flex;
+  gap: 20px;
+  align-items:center;
+}
+
+/* Left: poster */
+.hero-left {
+  flex: 0 0 200px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.hero-poster img {
+  width: 160px;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+/* Right: title/actions/overview */
+.hero-right {
+  flex: 1;
+  color: #fff;
+}
+.hero-title {
+  font-size: 32px;
+  margin: 0 0 10px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+.hero-actions {
+  display:flex;
+  gap: 12px;
+  margin-bottom:10px;
+}
+.hero-play, .hero-reviews {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border-radius: 24px;
+  padding: 8px 14px;
+}
+.hero-overview {
+  color: rgba(255,255,255,0.9);
+  max-width: 70%;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+/* Default Watch Trailer button style */
+.hero-play {
+  background: #ffffff;
+  color: #000;
+  border: none;
+  transition: 0.25s ease;
+}
+
+/* Hover → turn YELLOW */
+.hero-play:hover {
+  background: #f2c200 !important;   /* Bright yellow */
+  color: #000 !important;            /* Black text for contrast */
+  border: none !important;
+  transform: translateY(-2px);       /* slight lift effect */
+  box-shadow: 0 6px 20px rgba(255, 214, 0, 0.45);
+}
+
+/* Thumbnails strip */
+/* Thumbnails strip */
+.hero-thumbs-wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 10px;
+  width: calc((var(--thumb-size) * var(--visible-count)) + (var(--thumb-gap) * (var(--visible-count) - 1)) + 24px);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 120;
+}
+
+/* taller strip so hover pop fits inside */
+.hero-thumbs {
+  display: flex;
+  gap: var(--thumb-gap);
+  align-items: flex-end;         /* thumbs sit on the bottom of the strip */
+  justify-content: flex-start;
+  height: 220px;                  /* <--- more vertical room */
+  padding: 55px 8px 8px;         /* top padding = space for popup */
+  overflow-x: auto;              /* scroll horizontally */
+  overflow-y: hidden;            /* vertical is inside this 120px area */
+  pointer-events: auto;
+  background: transparent;
+  border-radius: 10px;
+  scrollbar-width: thin;
+  -ms-overflow-style: none;
+}
+.hero-thumbs::-webkit-scrollbar { height: 8px; }
+.hero-thumbs::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.18);
+  border-radius: 6px;
+}
+
+
+/* thumbnail button */
+.thumb-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: transform .16s cubic-bezier(.2,.9,.2,1), box-shadow .16s;
+  position: relative;
+  width: var(--thumb-size);
+  height: auto;
+  display: inline-block;
+}
+
+/* thumbnail image */
+.thumb-btn img {
+  width: var(--thumb-size);
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  transform-origin: center bottom;
+  transition: transform .16s cubic-bezier(.2,.9,.2,1), box-shadow .16s, opacity .12s;
+}
+
+/* hover pop/zoom */
+.thumb-btn:hover,
+.thumb-btn:focus {
+  z-index: 999;
+}
+.thumb-btn:hover img,
+.thumb-btn:focus img {
+  transform: translateY(-40px) scale(2.1);
+  box-shadow: 0 45px 100px rgba(0,0,0,0.85);
+}
+
+
+
+/* show small title bubble on hover */
+.thumb-meta {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  bottom: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(16,16,16,0.9);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease, transform .12s;
+}
+.thumb-btn:hover .thumb-meta,
+.thumb-btn:focus .thumb-meta {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-12px);
+}
+
+/* active (selected) thumbnail - keep subtle but visible */
+.thumb-btn.active img {
+  outline: 2px solid rgba(255,255,255,0.12);
+  transform: scale(1.08);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.5);
+}
+
+/* thumbnails overlay inside hero; hero has full-screen height */
+
+/* responsive reductions */
+@media (max-width: 900px) {
+  :root { --thumb-size: 44px; --visible-count: 4; }
+}
+@media (max-width: 520px) {
+  :root { --thumb-size: 40px; --visible-count: 3; }
+  .hero-thumbs-wrap { width: calc((var(--thumb-size) * var(--visible-count)) + (var(--thumb-gap) * (var(--visible-count) - 1)) + 24px); }
+}
+
+/* (variables defined at top) */
+
+/* movie carousel adjustments */
 .movie-carousel-container{
     width: 100vw;
     background-color: black;
