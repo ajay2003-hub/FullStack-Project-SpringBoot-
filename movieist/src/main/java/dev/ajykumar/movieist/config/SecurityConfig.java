@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // authorization rules using lambda to avoid ambiguous overloads
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/health").permitAll()
                         // Auth endpoints (login/register) open
                         .requestMatchers("/api/v1/auth/**").permitAll()
 
@@ -43,6 +44,7 @@ public class SecurityConfig {
 
                         // Allow all review endpoints (GET/POST/etc.)
                         .requestMatchers("/api/v1/reviews", "/api/v1/reviews/**").permitAll()
+
 
                         // Everything else requires auth
                         .anyRequest().authenticated()
