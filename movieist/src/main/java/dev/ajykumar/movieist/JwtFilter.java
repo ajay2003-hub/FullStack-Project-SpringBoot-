@@ -40,13 +40,15 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         // 🔓 Public endpoints: skip JWT verification
-        if (path.startsWith("/api/v1/auth")
+        if (path.equals("/health")
+                || path.startsWith("/api/v1/auth")
                 || (request.getMethod().equals("GET") && path.startsWith("/api/v1/movies"))
                 || (request.getMethod().equals("POST") && path.startsWith("/api/v1/reviews"))) {
 
             chain.doFilter(request, response);
             return;
         }
+
 
         // From here, JWT is required
         final String authHeader = request.getHeader("Authorization");
